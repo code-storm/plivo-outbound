@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/app.js",
+    "start": "NODE_ENV=production node dist/app.js",
+    "start:local": "NODE_ENV=development tsc && node dist/app.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\""
   },
@@ -16,7 +17,13 @@
     "typescript": "^3.7.3"
   },
   "dependencies": {
+    "@types/mysql": "^2.15.18",
+    "@types/sequelize": "^4.28.9",
+    "dotenv": "^9.0.2",
     "express": "^4.17.1",
-    "plivo": "^4.17.1"
+    "mysql": "^2.18.1",
+    "mysql2": "^2.2.5",
+    "plivo": "^4.17.1",
+    "sequelize": "^6.6.2"
   }
 }
