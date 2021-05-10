@@ -38,6 +38,11 @@ app.post("/connect", (req, res) => {
   return res.json({ success: true });
 });
 
+app.post("/event-hook", (req, res) => {
+  console.log("BODY: ",req.body, "HEADERS: ", req.headers);
+  res.json({success: true});
+});
+
 app.listen(port, () => {
   return console.log(`server is listening on ${port}`);
 });
