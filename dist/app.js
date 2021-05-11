@@ -60,38 +60,9 @@ var corsOptionsDelegate = function (req, callback) {
     callback(null, corsOptions); // callback expects two parameters: error and options
 };
 app.use(express_1.default.urlencoded({ extended: true }));
-var authId = config_1.config.PLIVO_AUTH_ID;
 var authToken = config_1.config.PLIVO_AUTH_TOKEN;
-// var plivoClient = new plivo.Client(authId,authToken);
 app.get("/", cors_1.default(), (req, res) => {
-    const method = "POST";
-    const url = "https://twin-node-server.herokuapp.com/event-hook";
-    const [nonce, auth_token, signature, params] = ["00112514496856822964", "NjcwYzIzYzQ2MDc0MWQ3NGQyYTMzMGQ1MmI0YzA1", "TLN7rOiDF+ZPjMP+FlDp/QMl3cwEWDI7vBYGjxkQpD0=", {
-            ALegRequestUUID: '4e7a1500-4240-4f75-aa5b-b995f0409299',
-            ALegUUID: '4e7a1500-4240-4f75-aa5b-b995f0409299',
-            AnswerTime: '2021-05-11 22:50:31',
-            BillDuration: '60',
-            BillRate: '0.032',
-            CallStatus: 'completed',
-            CallUUID: '4e7a1500-4240-4f75-aa5b-b995f0409299',
-            Direction: 'outbound',
-            Duration: '5',
-            EndTime: '2021-05-11 22:50:36',
-            Event: 'Hangup',
-            From: '918826211131',
-            HangupCause: 'ALLOTTED_TIMEOUT',
-            HangupCauseCode: '6000',
-            HangupCauseName: 'Scheduled Hangup',
-            HangupSource: 'Plivo',
-            ParentAuthID: 'MAMWU3ZWM5YMZJNMY4ZM',
-            RequestUUID: '4e7a1500-4240-4f75-aa5b-b995f0409299',
-            SessionStart: '2021-05-11 17:20:25.994819',
-            StartTime: '2021-05-11 22:50:22',
-            To: '918377803318',
-            TotalCost: '0.03200'
-        }];
-    var validate = plivo.validateV3Signature(method, url, nonce, auth_token, signature, params);
-    res.send("GET request is working" + validate);
+    res.send("GET request is working");
 });
 app.post("/connect", cors_1.default(corsOptionsDelegate), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -103,28 +74,25 @@ app.post("/connect", cors_1.default(corsOptionsDelegate), (req, res) => __awaite
         return res.status(500).json({ success: false, message: e.message });
     }
 }));
-app.post("/event-hook", (req, res) => {
-    let headers = req.headers;
-    console.log(headers);
+app.post("/event-hook", cors_1.default(), (req, res) => {
+    const headers = req.headers;
     let signature = headers["x-plivo-signature-v3"];
     let nonce = headers["x-plivo-signature-v3-nonce"];
-    console.log("before,", signature, nonce);
     if (!signature) {
         signature = "signature";
     }
     if (!nonce) {
         nonce = "12345";
     }
-    let url = req.url;
+    let url = req.protocol + "://" + req.get("host") + req.url;
     let auth_token = authToken;
-    console.log(signature, nonce);
     let method = req.method;
-    let validate;
-    let params = req.body;
-    console.log(method, url, nonce, auth_token, signature, params);
-    validate = plivo.validateV3Signature(method, url, nonce, auth_token, signature, params);
-    console.log(">>", validate);
     const plivoData = req.body;
+    const validate = plivo.validateV3Signature(method, url, nonce, auth_token, signature, plivoData);
+    console.log(">>", validate);
+    if (!validate) {
+        return res.status(500).json({ success: false, message: "Invalid data" });
+    }
     const outBoundCall = {
         callStartTime: plivoData.AnswerTime,
         billDuration: +plivoData.BillDuration,
@@ -137,13 +105,11 @@ app.post("/event-hook", (req, res) => {
     };
     model_1.db.OutboundCalls.create(outBoundCall)
         .then((data) => {
-        res.json({ success: true });
+        res.status(201).json({ success: true });
     })
         .catch((err) => {
-        res.json({ success: false, message: err });
+        res.status(500).json({ success: false, message: err });
     });
-    // console.log("BODY: ",req.body, "HEADERS: ", req.headers);
-    // res.json({success: true});
 });
 app.listen(port, () => {
     return console.log(`server is listening on ${port}`);
