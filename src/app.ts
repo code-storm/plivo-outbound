@@ -47,11 +47,11 @@ app.post("/connect", cors(corsOptionsDelegate), async (req, res) => {
 });
 
 app.post("/event-hook", (req, res) => {
-  console.log(">>>", req.headers['origin']);
   let headers = req.headers;
     console.log(headers);
-    let signature = headers["X-Plivo-Signature-V3"];
-    let nonce = headers["X-Plivo-Signature-V3-Nonce"];
+    let signature = headers["x-plivo-signature-v3"];
+    let nonce = headers["x-plivo-signature-v3-nonce"];
+    console.log("before,", signature, nonce);
     if (!signature) {
         signature = "signature";
     }
@@ -59,13 +59,13 @@ app.post("/event-hook", (req, res) => {
         nonce = "12345";
     }
     let url = headers.url;
-    let auth_token = "your_auth_token";
+    let auth_token = authToken;
     console.log(signature, nonce);
     let method = headers.method;
     let validate;
         let params = req.body;
         validate = plivo.validateV3Signature(method, url, nonce, auth_token, signature, params);
-    console.log(validate);
+    console.log(">>",validate);
 
   const plivoData = req.body;
   const outBoundCall = {
@@ -80,7 +80,6 @@ app.post("/event-hook", (req, res) => {
   };
   db.OutboundCalls.create(outBoundCall)
     .then((data) => {
-      console.log(data);
       res.json({ success: true });
     })
     .catch((err) => {
