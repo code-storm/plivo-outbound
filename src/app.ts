@@ -50,17 +50,22 @@ app.post("/event-hook", (req, res) => {
   console.log(">>>", req.headers['origin']);
   let headers = req.headers;
     console.log(headers);
-    let signature = headers["x-plivo-signature-v2"] as string;
-    let nonce = headers["x-plivo-signature-v2-nonce"] as string;
+    let signature = headers["X-Plivo-Signature-V3"];
+    let nonce = headers["X-Plivo-Signature-V3-Nonce"];
     if (!signature) {
         signature = "signature";
     }
     if (!nonce) {
         nonce = "12345";
     }
-      let params = req.body;
-      const validate = plivo.validateSignature(req.url, nonce, signature, authToken);
-  console.log(validate);
+    let url = headers.url;
+    let auth_token = "your_auth_token";
+    console.log(signature, nonce);
+    let method = headers.method;
+    let validate;
+        let params = req.body;
+        validate = plivo.validateV3Signature(method, url, nonce, auth_token, signature, params);
+    console.log(validate);
 
   const plivoData = req.body;
   const outBoundCall = {
