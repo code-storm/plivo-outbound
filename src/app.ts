@@ -61,10 +61,12 @@ app.post("/event-hook", (req, res) => {
     let url = headers.url;
     let auth_token = authToken;
     console.log(signature, nonce);
-    let method = headers.method;
+    // let method = headers.method;
+    
     let validate;
         let params = req.body;
-        validate = plivo.validateV3Signature(method, url, nonce, auth_token, signature, params);
+        console.log(headers.method, url, nonce, auth_token, signature, params);
+        validate = plivo.validateV3Signature("POST", url, nonce, auth_token, signature, params);
     console.log(">>",validate);
 
   const plivoData = req.body;
