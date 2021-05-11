@@ -11,6 +11,7 @@ export class PlivoApi {
       throw new Error(" to or timeInSec parameter not present.");
     }
     const { to, durationInSec } = req.body;
+    console.log("HANGUP URL : ", req.get("host") + "/event-hook");
     var data = qs.stringify({
       from: "+18663820815",
       to: to,
