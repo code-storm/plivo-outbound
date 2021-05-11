@@ -1,9 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_1 = require("../config");
-const sequelize_1 = require("sequelize");
-const sequelize = new sequelize_1.Sequelize(config_1.config.DB_DATABASE_NAME, config_1.config.DB_USER_NAME, config_1.config.DB_PASSWORD, {
-    host: config_1.config.DB_HOSTNAME,
-    dialect: "mysql",
-});
+exports.db = void 0;
+const outbound_calls_1 = require("./outbound-calls");
+exports.db = {
+    OutboundCalls: outbound_calls_1.OutboundCalls
+};
 //# sourceMappingURL=index.js.map

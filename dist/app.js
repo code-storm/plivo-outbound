@@ -38,6 +38,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express_1 = __importDefault(require("express"));
 const config_1 = require("./config");
 const plivo_api_1 = require("./plivo-api");
+const model_1 = require("./model");
 const app = express_1.default();
 const port = process.env.PORT || 5000;
 var plivo = require("plivo");
@@ -65,7 +66,6 @@ app.get('/retrieve-call/:callId', (req, res) => {
 });
 app.post("/connect", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.get('host') + "/event-hook");
         const response = yield plivo_api_1.PlivoApi.makeCall(req, res);
         return res.json({ success: true, data: response.data });
     }
@@ -75,8 +75,27 @@ app.post("/connect", (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 }));
 app.post("/event-hook", (req, res) => {
-    console.log("BODY: ", req.body, "HEADERS: ", req.headers);
-    res.json({ success: true });
+    const plivoData = req.body;
+    const outBoundCall = {
+        callStartTime: plivoData.AnswerTime,
+        billDuration: +plivoData.BillDuration,
+        billRate: +plivoData.BillRate,
+        callStatus: plivoData.CallStatus,
+        callUUID: plivoData.CallUUID,
+        duration: +plivoData.Duration,
+        callEndTime: plivoData.EndTime,
+        cost: +plivoData.TotalCost
+    };
+    model_1.db.OutboundCalls.create(outBoundCall)
+        .then(data => {
+        console.log(data);
+        res.json({ success: true });
+    })
+        .catch(err => {
+        res.json({ success: false, message: err });
+    });
+    // console.log("BODY: ",req.body, "HEADERS: ", req.headers);
+    // res.json({success: true});
 });
 app.listen(port, () => {
     return console.log(`server is listening on ${port}`);

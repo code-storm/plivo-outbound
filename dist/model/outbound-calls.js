@@ -7,10 +7,30 @@ class OutboundCalls extends sequelize_1.Model {
 }
 exports.OutboundCalls = OutboundCalls;
 OutboundCalls.init({
-    phloId: {
-        type: sequelize_1.DataTypes.UUID,
-        allowNull: false,
+    callStartTime: {
+        type: sequelize_1.DataTypes.DATE
     },
+    billDuration: {
+        type: sequelize_1.DataTypes.INTEGER
+    },
+    billRate: {
+        type: sequelize_1.DataTypes.FLOAT
+    },
+    callStatus: {
+        type: sequelize_1.DataTypes.STRING
+    },
+    callUUID: {
+        type: sequelize_1.DataTypes.UUID
+    },
+    duration: {
+        type: sequelize_1.DataTypes.FLOAT
+    },
+    callEndTime: {
+        type: sequelize_1.DataTypes.DATE
+    },
+    cost: {
+        type: sequelize_1.DataTypes.FLOAT
+    }
 }, {
     sequelize: db_sequalize_1.DB_Sequelize,
     timestamps: true,
