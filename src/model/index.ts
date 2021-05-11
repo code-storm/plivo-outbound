@@ -1,12 +1,5 @@
-import { config } from "../config";
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { OutboundCalls } from "./outbound-calls";
 
-const sequelize = new Sequelize(
-  config.DB_DATABASE_NAME,
-  config.DB_USER_NAME,
-  config.DB_PASSWORD,
-  {
-    host: config.DB_HOSTNAME,
-    dialect: "mysql",
-  }
-);
+export const db = {
+  OutboundCalls
+}
