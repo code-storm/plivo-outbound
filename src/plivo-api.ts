@@ -11,14 +11,14 @@ export class PlivoApi {
       throw new Error(" to or timeInSec parameter not present.");
     }
     const { to, durationInSec } = req.body;
-    console.log("HANGUP URL : ", req.get("host") + "/event-hook");
+    console.log("HANGUP URL : ", req.protocol + "://" + req.get("host") + "/event-hook");
     var data = qs.stringify({
       from: "+18663820815",
       to: to,
       answer_url: "https://s3.amazonaws.com/plivosamplexml/play_url.xml",
       answer_method: "GET",
       time_limit: durationInSec,
-      hangup_url: req.get("host") + "/event-hook",
+      hangup_url:  req.protocol + "://" + req.get("host") + "/event-hook",
     });
     var config: AxiosRequestConfig = {
       method: "post",
