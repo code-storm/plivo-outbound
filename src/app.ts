@@ -1,59 +1,67 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import qs from "qs";
-import * as dotenv from 'dotenv';
+import * as dotenv from "dotenv";
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   dotenv.config();
 }
 import express from "express";
+import cors from "cors";
+import plivo from "plivo";
+import { PlivoApi } from "./plivo-api";
+import { db } from "./model";
 import { config } from "./config";
-import { PlivoApi } from './plivo-api';
-import { db } from './model';
 const app = express();
 const port = process.env.PORT || 5000;
-var plivo = require("plivo");
-// var PhloClient = plivo.PhloClient;
+var allowlist = ["https://twin-node-server.herokuapp.com"];
+var corsOptionsDelegate = function (req, callback) {
+  var corsOptions;
+  if (process.env.NODE_ENV === "development") {
+    corsOptions = { origin: true };
+  } else {
+    if (allowlist.indexOf(req.header("Origin")) !== -1) {
+      corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response
+    } else {
+      corsOptions = { origin: false }; // disable CORS for this request
+    }
+  }
+  callback(null, corsOptions); // callback expects two parameters: error and options
+};
 
-app.use(express.urlencoded({ extended: true}));
+app.use(express.urlencoded({ extended: true }));
 
 var authId = config.PLIVO_AUTH_ID;
 var authToken = config.PLIVO_AUTH_TOKEN;
-// var phloId = config.PLIVO_PHLOID;
-// const phloClient = new PhloClient(authId, authToken);
-var plivoClient = new plivo.Client(authId,authToken);
-var payload = {
-  from: "+18663820815",
-  to: null,
-};
+// var plivoClient = new plivo.Client(authId,authToken);
 
-app.get("/", (req, res) => {
+app.get("/", cors(), (req, res) => {
   res.send("GET request is working");
 });
 
-app.get('/retrieve-call/:callId', (req, res) => {
-  plivoClient.calls.get(
-    req.params.callId, // call uuid
-).then(function (response) {
-    console.log(response);
-}, function (err) {
-    console.error(err);
-});
-res.json({});
-})
-
-app.post("/connect", async (req, res) => {
-  
+app.post("/connect", cors(corsOptionsDelegate), async (req, res) => {
   try {
     const response = await PlivoApi.makeCall(req, res);
-  
-  return res.json({ success: true, data: response.data });
+    return res.json({ success: true, data: response.data });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ success: false, message: e.message});
+    return res.status(500).json({ success: false, message: e.message });
   }
 });
 
 app.post("/event-hook", (req, res) => {
+  console.log(">>>", req.headers['origin']);
+  let headers = req.headers;
+    console.log(headers);
+    let signature = headers["x-plivo-signature-v2"] as string;
+    let nonce = headers["x-plivo-signature-v2-nonce"] as string;
+    if (!signature) {
+        signature = "signature";
+    }
+    if (!nonce) {
+        nonce = "12345";
+    }
+      let params = req.body;
+      const validate = plivo.validateSignature(req.url, nonce, signature, authToken);
+  console.log(validate);
+
   const plivoData = req.body;
   const outBoundCall = {
     callStartTime: plivoData.AnswerTime,
@@ -63,16 +71,16 @@ app.post("/event-hook", (req, res) => {
     callUUID: plivoData.CallUUID,
     duration: +plivoData.Duration,
     callEndTime: plivoData.EndTime,
-    cost: +plivoData.TotalCost
-  }
+    cost: +plivoData.TotalCost,
+  };
   db.OutboundCalls.create(outBoundCall)
-  .then(data => {
-    console.log(data);
-    res.json({success: true});
-  })
-  .catch(err =>{
-    res.json({success: false, message: err});
-  });
+    .then((data) => {
+      console.log(data);
+      res.json({ success: true });
+    })
+    .catch((err) => {
+      res.json({ success: false, message: err });
+    });
   // console.log("BODY: ",req.body, "HEADERS: ", req.headers);
   // res.json({success: true});
 });
