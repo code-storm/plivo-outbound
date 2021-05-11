@@ -22,13 +22,13 @@ class PlivoApi {
 }
 exports.PlivoApi = PlivoApi;
 PlivoApi.makeCall = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!req.body.to || !req.body.durationInSec) {
-        throw new Error(" to or timeInSec parameter not present.");
+    if (!req.body.from || !req.body.to || !req.body.durationInSec) {
+        throw new Error("from|to|timeInSec body parameter not present.");
     }
-    const { to, durationInSec } = req.body;
+    const { from, to, durationInSec } = req.body;
     const hangupUrl = req.protocol + "://" + req.get("host") + "/event-hook";
     const data = qs_1.default.stringify({
-        from: "+918826211131",
+        from: from,
         to: to,
         answer_url: "https://s3.amazonaws.com/plivosamplexml/play_url.xml",
         answer_method: "GET",

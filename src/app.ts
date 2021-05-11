@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 import express from "express";
 import cors from "cors";
-import plivo from "plivo";
+const plivo = require("plivo");
 import { PlivoApi } from "./plivo-api";
 import { db } from "./model";
 import { config } from "./config";
