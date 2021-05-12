@@ -12,7 +12,7 @@ import { config } from "./config";
 const app = express();
 const port = process.env.PORT || 5000;
 
-const whitelist = ["https://twin-node-server.herokuapp.com"];
+const whitelist = ["https://code-storm.github.io", "https://twin-node-server.herokuapp.com"];
 var corsOptions = {
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
