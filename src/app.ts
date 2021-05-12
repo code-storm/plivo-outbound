@@ -11,21 +11,16 @@ import { db } from "./model";
 import { config } from "./config";
 const app = express();
 const port = process.env.PORT || 5000;
-var allowlist = ["https://twin-node-server.herokuapp.com"];
-var corsOptionsDelegate = function (req, callback) {
-  var corsOptions;
-  if (process.env.NODE_ENV === "development") {
-    corsOptions = { origin: true };
-  } else {
-    console.log("Origin: ", req.header("Origin"));
-    if (allowlist.indexOf(req.header("Origin")) !== -1) {
-      corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response
+
+const whitelist = ["https://twin-node-server.herokuapp.com"];
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
     } else {
-      corsOptions = { origin: false }; // disable CORS for this request
+      callback(new Error("Not allowed by CORS"));
     }
-    console.log(corsOptions);
-  }
-  callback(null, corsOptions); // callback expects two parameters: error and options
+  },
 };
 
 app.use(express.urlencoded({ extended: true }));
@@ -36,7 +31,7 @@ app.get("/", cors(), (req, res) => {
   res.send("GET request is working");
 });
 
-app.post("/connect", cors(corsOptionsDelegate), async (req, res) => {
+app.post("/connect", cors(corsOptions), async (req, res) => {
   try {
     const response = await PlivoApi.makeCall(req, res);
     return res.json({ success: true, data: response.data });
@@ -46,7 +41,7 @@ app.post("/connect", cors(corsOptionsDelegate), async (req, res) => {
   }
 });
 
-app.post("/event-hook", cors(), (req, res) => {
+app.post("/event-hook", cors(corsOptions), (req, res) => {
   const headers = req.headers;
   let signature = headers["x-plivo-signature-v3"];
   let nonce = headers["x-plivo-signature-v3-nonce"];
